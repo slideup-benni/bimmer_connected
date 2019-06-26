@@ -4,6 +4,8 @@ import logging
 from typing import List
 
 from bimmer_connected.state import VehicleState, WINDOWS, LIDS
+from bimmer_connected.last_trip import LastTrip
+from bimmer_connected.state import VehicleState
 from bimmer_connected.remote_services import RemoteServices
 from bimmer_connected.const import VEHICLE_IMAGE_URL
 
@@ -66,10 +68,12 @@ class ConnectedDriveVehicle:
         self.remote_services = RemoteServices(account, self)
         self.observer_latitude = 0.0  # type: float
         self.observer_longitude = 0.0  # type: float
+        self.last_trip = LastTrip(account, self)
 
     def update_state(self) -> None:
         """Update the state of a vehicle."""
         self.state.update_data()
+        self.last_trip.update_data()
 
     @property
     def drive_train(self) -> DriveTrainType:
@@ -158,6 +162,14 @@ class ConnectedDriveVehicle:
         header['accept'] = 'image/png'
         response = self._account.send_request(url, headers=header)
         return response.content
+
+    @property
+    def statistics_available(self) -> bool:
+        """Check if the vehicle supports reading statistics.
+
+        Only if this returns True, then the last state will contain useful data.
+        """
+        return self.attributes['statisticsAvailable']
 
     def __getattr__(self, item):
         """In the first version: just get the attributes from the dict.

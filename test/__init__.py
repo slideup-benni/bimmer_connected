@@ -13,6 +13,7 @@ TEST_PASSWORD = 'my_secret'
 TEST_REGION = Regions.REST_OF_WORLD
 G31_VIN = 'G31_NBTevo_VIN'
 F48_VIN = 'F48_VIN'
+F45_VIN = 'F45_VIN'
 I01_VIN = 'I01_VIN'
 F15_VIN = 'F15_VIN'
 I01_NOREX_VIN = 'I01_NOREX_VIN'
@@ -126,10 +127,15 @@ class BackendMock:
         return MockResponse(regex='', data='unknown url: {}'.format(url), status_code=404)
 
     def setup_default_vehicles(self) -> None:
-        """Setup the vehicle configuration in a mock backend."""
+        """Setup the vehicle configuration in a mock backend.
+
+        This reads the status.json and last_trip.json from every vehicle in the list.
+        """
         for vin, path in TEST_VEHICLE_DATA.items():
             self.add_response('https://.+/webapi/v1/user/vehicles/{vin}/status$'.format(vin=vin),
                               data_files=['{path}/status.json'.format(path=path)])
+            self.add_response('https://.+/webapi/v1/user/vehicles/{vin}/statistics/lastTrip$'.format(vin=vin),
+                              data_files=['{path}/last_trip.json'.format(path=path)])
 
 
 class MockRequest:  # pylint: disable=too-few-public-methods
