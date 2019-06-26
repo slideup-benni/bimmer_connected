@@ -57,15 +57,18 @@ def get_status(args) -> None:
         len(account.vehicles),
         ','.join([v.name for v in account.vehicles])))
 
+    dict_resp = []
     for vehicle in account.vehicles:
-        print('VIN: {}'.format(vehicle.vin))
-        print('mileage: {}'.format(vehicle.state.mileage))
-        print('vehicle properties:')
-        print(json.dumps(vehicle.attributes, indent=4))
-        print('vehicle status:')
-        print(json.dumps(vehicle.state.attributes, indent=4))
-        print('vehicle last trip:')
-        print(json.dumps(vehicle.last_trip.attributes, indent=4))
+        vehicle.last_trip.update_data()
+        dict_resp.append({
+            'vin': vehicle.vin,
+            'mileage': vehicle.state.mileage,
+            'properties': vehicle.attributes,
+            'status': vehicle.state.attributes,
+            'last_trip': vehicle.last_trip.attributes
+        })
+
+    print(json.dumps(dict_resp, indent=4))
 
 
 def fingerprint(args) -> None:
