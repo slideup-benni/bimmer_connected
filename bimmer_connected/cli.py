@@ -47,19 +47,43 @@ def main() -> None:
 
 def get_status(args) -> None:
     """Get the vehicle status."""
-    account = ConnectedDriveAccount(args.username, args.password, get_region_from_name(args.region))
+    for rtime in [1, 1, 1, 5, 30, 60, None]:
+        try:
+            account = ConnectedDriveAccount(args.username, args.password, get_region_from_name(args.region))
+        except IOError as e:
+            if rtime is not None:
+                time.sleep(rtime)
+            else:
+                raise
+        break
+
     if args.lat and args.lng:
         for vehicle in account.vehicles:
             vehicle.set_observer_position(args.lat, args.lng)
-    account.update_vehicle_states()
 
-    print('Found {} vehicles: {}'.format(
-        len(account.vehicles),
-        ','.join([v.name for v in account.vehicles])))
+    for rtime in [1, 1, 1, 5, 30, 60, None]:
+        try:
+            account.update_vehicle_states()
+        except IOError as e:
+            if rtime is not None:
+                time.sleep(rtime)
+            else:
+                raise
+        break
 
     dict_resp = []
     for vehicle in account.vehicles:
-        vehicle.last_trip.update_data()
+
+        for rtime in [1, 1, 1, 5, 30, 60, None]:
+            try:
+                vehicle.last_trip.update_data()
+            except IOError as e:
+                if rtime is not None:
+                    time.sleep(rtime)
+                else:
+                    raise
+            break
+
         dict_resp.append({
             'vin': vehicle.vin,
             'mileage': vehicle.state.mileage,
