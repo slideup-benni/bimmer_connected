@@ -47,12 +47,16 @@ def main() -> None:
 
 def get_status(args) -> None:
     """Get the vehicle status."""
+
+    _LOGGER = logging.getLogger(__name__)
     for rtime in [1, 1, 1, 5, 30, 60, None]:
         try:
             account = ConnectedDriveAccount(args.username, args.password, get_region_from_name(args.region))
         except IOError as e:
             if rtime is not None:
+                _LOGGER.debug('Request failed. Retry in {} seconds.'.format(rtime))
                 time.sleep(rtime)
+                continue
             else:
                 raise
         break
@@ -66,7 +70,9 @@ def get_status(args) -> None:
             account.update_vehicle_states()
         except IOError as e:
             if rtime is not None:
+                _LOGGER.debug('Request failed. Retry in {} seconds.'.format(rtime))
                 time.sleep(rtime)
+                continue
             else:
                 raise
         break
@@ -79,7 +85,9 @@ def get_status(args) -> None:
                 vehicle.last_trip.update_data()
             except IOError as e:
                 if rtime is not None:
+                    _LOGGER.debug('Request failed. Retry in {} seconds.'.format(rtime))
                     time.sleep(rtime)
+                    continue
                 else:
                     raise
             break
